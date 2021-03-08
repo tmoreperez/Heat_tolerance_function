@@ -4,7 +4,7 @@
 #For this function, define the the columns with the 1) Temperature & 2) FvFm variables, then the 3) control temperature, the 4) id/unique factor that you 
 #want to estimate the heat tolerances for, 5) indicate if you want to make plots, 6) the number of bootsrap iterations for estimating 
 
-setwd("/Users/timothyperez/Google Drive/Git_stuff/Git_projects/Heat_tolerance_function")
+setwd(**your file path here**/Heat_tolerance_function")
 library(car)
 htdata=read.csv("Sample_FvFm_data.csv")
 psiiht=function( Temperature, FvFm, control.temp, id, plot.est, boots){
