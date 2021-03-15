@@ -2,9 +2,9 @@
 #Be sure to the read the Read.me.txt file.
 #Below, the "psiiht" function can calculate heat tolerances of PSII heat tolerance. 
 #For this function, define the the columns with the 1) Temperature & 2) FvFm variables, then the 3) control temperature, the 4) id/unique factor that you 
-#want to estimate the heat tolerances for, 5) indicate if you want to make plots, 6) the number of bootsrap iterations for estimating 
+#want to estimate the heat tolerances for, 5) indicate if you want to make plots, 6) the number of bootsrap iterations for estimating heat tolerances
 
-setwd(**your file path here**/Heat_tolerance_function")
+setwd("Your Directory Here/Heat_tolerance_function/")
 library(car)
 htdata=read.csv("Sample_FvFm_data.csv")
 psiiht=function( Temperature, FvFm, control.temp, id, plot.est, boots){
@@ -44,12 +44,12 @@ psiiht=function( Temperature, FvFm, control.temp, id, plot.est, boots){
      T95[k]=(-log((coef(HT.model2)[1]/nine5)-1)-coef(HT.model2)[2])/coef(HT.model2)[3] 
      
      #Estimate T50
-     T50[k]=(-log((coef(HT.model2)[[1]]/half)-1)-coef(HT.model2)[[2]])/coef(HT.model2)[[3]] #estimate ctmax
-     T50k=(-log((coef(HT.model2)[[1]]/half)-1)-coef(HT.model2)[[2]])/coef(HT.model2)[[3]] #estimate ctmax
+     T50[k]=(-log((coef(HT.model2)[[1]]/half)-1)-coef(HT.model2)[[2]])/coef(HT.model2)[[3]]
+     T50k=(-log((coef(HT.model2)[[1]]/half)-1)-coef(HT.model2)[[2]])/coef(HT.model2)[[3]]
      #Use model to predict changes in FvFm & make new dataframe
-     predict=data.frame(x=seq(23,62),y=coef(HT.model2)[1]/(1+exp(-(coef(HT.model2)[2]+coef(HT.model2)[3]*seq(23,62)))) ) #create the prediction data frame
+     predict=data.frame(x=seq(23,62),y=coef(HT.model2)[1]/(1+exp(-(coef(HT.model2)[2]+coef(HT.model2)[3]*seq(23,62)))) ) #create a dataframe of predictions
      df1=cbind(predict[-1,], predict[-nrow(predict),])[,c(3,1,4,2)]
-     #Use new dataframe to estimate the slope at between 1-degree intervals
+     #Use new dataframe to estimate the slope at between each 1-degree interval
      df1$slp=as.vector(apply(df1, 1, function(x) summary(lm((x[3:4]) ~ x[1:2])) [[4]][[2]] ))
      slp.at.tcrit=round(min(df1$slp), 3)*.15 #Determine where slope is 15% of max slope & round
      #Estimate the FvFm at which the slope is 15% of max slope & less than T50
@@ -71,17 +71,19 @@ psiiht=function( Temperature, FvFm, control.temp, id, plot.est, boots){
    
    if(plot.est==T){ 
      plot(NULL, NULL,xlab="Temperature",ylab="Fv/Fm",xlim=c(23,65),ylim=c(0,0.9), bty="l", lty=2)
-     text(22,0.3, pos=4, paste(unique(paste(id))), font=4, cex=0.7)
+     text(22,0.3, pos=4, paste(unique(paste(id))), font=4)
      points(Temperature, FvFm, xlab="Temperature", ylab="Fv/Fm",xlim=c(23,65), ylim=c(0,0.85), bty="l", lty=2, pch=5,  col="black")
-     lines(seq(23,62), y,lwd=1, col="purple")
-     lines(seq(23,62), FvFm.boot[,1],lty=3, col="purple")
-     lines(seq(23,62), FvFm.boot[,2],lty=3, col="purple")
-     text(30,0, paste('Tcrit:', round(mean(na.omit(Tcrit)),1)), pos=4,col="dark blue")
-     abline(v=round(mean(na.omit(Tcrit)),1), lty=2,lwd=1.5, col="dark blue",  cex=0.8)
-     text(30,.1, paste('T50:',round(mean(na.omit(T50)),1)), pos=4, col="dark orange")
-     abline(v=round(mean(na.omit(T50)),1), lty=2,lwd=1.5, col="dark orange",cex=0.8)
-     text(30,.2, paste('T95:',round(mean(na.omit(T95)),1)),pos=4, col="dark red")
-     abline(v=round(mean(na.omit(T95)),1), lty=2,lwd=1.5, col="dark red", cex=0.8)
+     lines(seq(23,62), y,lwd=1, col="black")
+     if(boots>1){
+     lines(seq(23,62), FvFm.boot[,1],lty=3, col="black")
+     lines(seq(23,62), FvFm.boot[,2],lty=3, col="black")
+     }
+     text(30,0, paste('Tcrit:', round(mean(na.omit(Tcrit)),1)), pos=4,col="light gray")
+     abline(v=round(mean(na.omit(Tcrit)),1), lty=2,lwd=1.5, col="light gray",  cex=0.8)
+     text(30,.1, paste('T50:',round(mean(na.omit(T50)),1)), pos=4, col="gray")
+     abline(v=round(mean(na.omit(T50)),1), lty=2,lwd=1.5, col="gray",cex=0.8)
+     text(30,.2, paste('T95:',round(mean(na.omit(T95)),1)),pos=4, col="black")
+     abline(v=round(mean(na.omit(T95)),1), lty=2,lwd=1.5, col="black", cex=0.8)
    }
    return(data.frame(id=(unique(id)), 
                      #Tcrit.lci=round(Tcrit.ci[[1]],1),
@@ -99,7 +101,7 @@ psiiht=function( Temperature, FvFm, control.temp, id, plot.est, boots){
  })))
   detach(l1)
  }
-psiiht(Temperature=htdata$Temperature, FvFm=htdata$FvFm, control.temp=23, id=htdata$id, plot.est=T, boots=100)
+psiiht(Temperature=htdata$Temperature, FvFm=htdata$FvFm, control.temp=23, id=htdata$id, plot.est=T, boots=5)
 
 
 
